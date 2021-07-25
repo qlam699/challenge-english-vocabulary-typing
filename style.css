@@ -1,0 +1,44 @@
+#canvas {
+	background: cadetblue;
+}
+
+body {
+	margin: 0px;
+	font-size: 20px;
+}
+
+button,
+input {
+	font-size: 20px;
+}
+
+#panel {
+	z-index: 2;
+	position: absolute;
+	top: 30%;
+	left: 20%;
+	background-color: ghostwhite;
+	padding: 10px;
+}
+
+.selected {
+	color: red;
+}
+
+#savedWords {
+	display: flex;
+	flex: 1;
+}
+
+#wordList {
+	border: 1px solid;
+	padding: 10px;
+	cursor: pointer;
+}
+
+.right {
+	border: 1px solid;
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Challenge English Vocabulary Typing</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="description"
+    content="Challenge English Vocabulary Typing HTML Game is an educational game where user learns to type words quickly. " />
+  <meta name="keywords"
+    content="advanced, learner, dictionary, free, english, british english, american english,challenge,english,vocabulary,typing,html,game,is,an,educational,game,where,user,learns,to,type,words,quickly." />
+
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <canvas id="canvas"> </canvas>
+  <div id="panel">
+    <button id="btnStart" onclick="start()">Start game</button>
+
+    <p>Select the goal words</p>
+    <div id="savedWords">
+      <div id="wordList" class="left">
+      </div>
+      <div class="right">
+        <p>Add the goal words (split by space, comma or enter) </p>
+        <small>You can copy the text from the english sites and paste to the words box</small>
+        <input id="name" placeholder="name" />
+        <textarea id="words" placeholder="words" rows="10" name="words"></textarea>
+        <input type="submit" value="save word" onclick="saveWords()" />
+      </div>
+    </div>
+  </div>
+</body>
+<script src="./index.js"></script>
+
+</html>
