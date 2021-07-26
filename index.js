@@ -34,6 +34,13 @@ function getLocalData() {
   return JSON.parse(localStorage.getItem(LOCAL_DATA));
 }
 
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
 function saveLocalData(data) {
   localStorage.setItem(LOCAL_DATA, JSON.stringify(data));
 }
@@ -133,6 +140,8 @@ function start() {
   array = [];
   y = -10;
   level++;
+  
+  shuffleArray(theme);
   const tempTheme = makeRepeated(theme, level);
   console.log(tempTheme)
   for (let i = 0; i < tempTheme.length; i++) {
@@ -158,10 +167,9 @@ function animate() {
   ctx.clearRect(0, 0, innerWidth, innerHeight);
   ctx.font = '18px Arial';
   ctx.fillStyle = 'black';
-  ctx.fillText('SCORE:', 10, 70);
+  ctx.fillText('SCORE: ' + scr, 10, 70);
   ctx.fillText('Level: ' + level, 10, 90);
 
-  ctx.fillText(scr, 1280, 20);
   ctx.font = '40px Arial';
   ctx.strokeStyle = 'lightgrey';
   ctx.strokeText(GAME_NAME, 10, 40);
@@ -169,6 +177,11 @@ function animate() {
   ctx.fillStyle = 'lightgrey';
   ctx.fillRect(c.width / 2 - 20, c.height - 50, 50, 50);
   ctx.fill();
+  if(scr === theme.length){
+    ctx.fillStyle = 'black'
+    ctx.fillText('Yeah! Win Level ' + level, c.width / 2 - 100, c.height / 2 - 100)
+    cancelAnimationFrame(keyAnimation);
+  }
   loopBubble();
 }
 
