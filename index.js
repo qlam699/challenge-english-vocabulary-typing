@@ -1,22 +1,24 @@
 // Constant
 const LOCAL_DATA = 'LOCAL_DATA';
 const GAME_NAME = 'Challenge English Vocabulary Typing';
-// init
+const RADIUS_BUBBLE = 40;
+// Init
 const btnStart = document.getElementById('btnStart');
 const panel = document.getElementById('panel');
 const nameElement = document.getElementById('name');
 const wordsElement = document.getElementById('words');
 
-let c = document.getElementById('canvas');
-let ctx = c.getContext('2d');
-c.height = window.innerHeight * 0.98;
-c.width = window.innerWidth * 0.996;
+const c = document.getElementById('canvas');
+const ctx = c.getContext('2d');
+c.height = window.innerHeight;
+c.width = window.innerWidth;
 
 let array = [];
-let y = -10;
+let y = -10; // Margin top screen -10px
 let h = 0;
 let ct = 8;
-let len = 0, scr = 0;
+let len = 0, scoreGame = 0;
+let currentWord = '';
 
 let indexWordList = 0;
 let level = 0;
@@ -30,14 +32,17 @@ if (!getLocalData())
 renderWordList();
 
 // functions
+const makeRepeated = (arr, repeats) =>
+  Array.from({ length: repeats }, () => arr).flat();
+
 function getLocalData() {
   return JSON.parse(localStorage.getItem(LOCAL_DATA));
 }
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
 }
 
@@ -95,6 +100,7 @@ function Balloon(x, y, r, color, dy, text, word) {
   this.word = word;
 
   this.draw = function () {
+
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
     ctx.fillStyle = this.color;
@@ -103,56 +109,64 @@ function Balloon(x, y, r, color, dy, text, word) {
     ctx.font = '15px Arial';
     ctx.fillStyle = 'white';
     ctx.fillText(this.text, this.x - 32, this.y + 3);
+
   }
   this.update = function () {
     this.type();
-    this.y += this.dy
+    this.y += this.dy;
   }
   this.type = function () {
     ctx.font = '40px Arial';
-    ctx.fillStyle = 'black';
-    ctx.fillText(this.word, 670, 580);
+
+    if (currentWord.length > 1) {
+      ctx.fillStyle = 'black';
+      ctx.fillText(currentWord, 670, 580);
+
+      ctx.fillStyle = 'red';
+      ctx.fillText('_', 670, 580);
+    }
   }
 }
 
 
 function drawStartScreen(isGameOver = false) {
-
   panel.style.display = 'block';
 
   ctx.font = '30px Arial';
   ctx.fillStyle = 'black';
+
   if (isGameOver) {
+    // Reset level
+    level = 0;
     ctx.fillStyle = 'red';
     ctx.fillText('Game Over', c.width / 2 - 250, c.height / 2 - 160);
   } else {
-    ctx.fillText(scr, 1280, 20);
     ctx.font = '40px Arial';
     ctx.strokeStyle = 'lightgrey';
     ctx.strokeText(GAME_NAME, 10, 40);
   }
 
 }
-const makeRepeated = (arr, repeats) =>
-  Array.from({ length: repeats }, () => arr).flat();
+
 
 function start() {
   array = [];
   y = -10;
   level++;
-  
+  scoreGame = 0;
+
   shuffleArray(theme);
-  const tempTheme = makeRepeated(theme, level);
-  console.log(tempTheme)
-  for (let i = 0; i < tempTheme.length; i++) {
-    let x = Math.random() * (800 - 60) + 30;
+  theme = makeRepeated(theme, level);
+
+  // Random position the bubble appear
+  for (let i = 0; i < theme.length; i++) {
+    const x = Math.random() * (800 - 60) + 30;
     y -= Math.random() * (120 - 60) + 60;
-    // y -= 66;
-    let r = 40;
-    let dy = 1;
+
+    let dy = 1; // velocity of the bubbles
     let color = selectColor[Math.floor(Math.random() * (selectColor.length - 1))];
-    let text = tempTheme[i];
-    array.push(new Balloon(x, y, r, color, dy, text, ''));
+    let text = theme[i];
+    array.push(new Balloon(x, y, RADIUS_BUBBLE, color, dy, text, ''));
   }
 
 
@@ -162,52 +176,47 @@ function start() {
 
 drawStartScreen();
 let keyAnimation = null;
+
 function animate() {
   keyAnimation = requestAnimationFrame(animate);
   ctx.clearRect(0, 0, innerWidth, innerHeight);
   ctx.font = '18px Arial';
   ctx.fillStyle = 'black';
-  ctx.fillText('SCORE: ' + scr, 10, 70);
-  ctx.fillText('Level: ' + level, 10, 90);
+  ctx.fillText('LEVEL: ' + level, 10, 90);
+  ctx.fillText('SCORE: ' + scoreGame, 10, 70);
 
   ctx.font = '40px Arial';
   ctx.strokeStyle = 'lightgrey';
   ctx.strokeText(GAME_NAME, 10, 40);
-  ctx.beginPath();
-  ctx.fillStyle = 'lightgrey';
-  ctx.fillRect(c.width / 2 - 20, c.height - 50, 50, 50);
-  ctx.fill();
-  if(scr === theme.length){
-    ctx.fillStyle = 'black'
-    ctx.fillText('Yeah! Win Level ' + level, c.width / 2 - 100, c.height / 2 - 100)
-    cancelAnimationFrame(keyAnimation);
-  }
+
   loopBubble();
 }
 
 function loopBubble() {
-  const len = array.length;
-  for (let m = 0; m < len; m++) {
+  const currentArrayLength = array.length;
+  for (let m = 0; m < currentArrayLength; m++) {
     array[m].draw();
   }
-  for (let p = 0; p < len; p++) {
+  for (let p = 0; p < currentArrayLength; p++) {
     array[p].update();
-    if (array[p].y >= c.height) {
-      if (array[p].r > 0) {
+    if (array[p].y >= c.height - RADIUS_BUBBLE) { // Bubble is bottom screen
+
+      if (array[p].r > 0) { // Game over
         cancelAnimationFrame(keyAnimation);
         drawStartScreen(true);
         return;
       }
+    }
 
-      // If the last bubble fall so we win
-      if (p === len - 1) {
-        ctx.fillStyle = 'black'
-        ctx.fillText('Yeah! Win Level ' + level, c.width / 2 - 100, c.height / 2 - 100)
-        cancelAnimationFrame(keyAnimation);
-        setTimeout(() => {
-          start()
-        }, 2000)
-      }
+    // If the last bubble fall so we win
+    if (scoreGame === theme.length) {
+      ctx.fillStyle = 'black'
+      ctx.fillText('Yeah! Win Level ' + level, c.width / 2 - 100, c.height / 2 - 100)
+      cancelAnimationFrame(keyAnimation);
+      return start();
+      // setTimeout(() => {
+      //   return start();
+      // }, 2000)
     }
 
   }
@@ -215,10 +224,12 @@ function loopBubble() {
 
 window.addEventListener('keyup', function (event) {
   let char = String.fromCharCode(event.keyCode).toLowerCase();
-  if (ct == 8) {
+
+  if (ct === 8) {
     for (let g = 0; g < array.length; g++) {
+      // the bubble was appeared and the key pressed is that.
       if (array[g].y >= 0 && array[g].text.substring(0, 1) === char) {
-        h = g;
+        h = g; // current word position 
         len = array[h].text.length;
         break;
       }
@@ -226,15 +237,17 @@ window.addEventListener('keyup', function (event) {
   }
 
   if (array[h]?.text.substring(0, 1) === char) {
+    currentWord = array[h].text;
+
     let word = array[h].text.substring(0, 1);
     array[h].word = word;
     array[h].text = (array[h].text).replace(word, '');
     ct--;
-    if (array[h].text.length == 0) {
+    if (array[h].text.length === 0) {
       ct += len;
       array[h].r = 0;
       array[h].y = 0;
-      scr++;
+      scoreGame++;
       array[h].word = '';
     }
   }
