@@ -17,7 +17,7 @@ let array = [];
 let y = -10; // Margin top screen -10px
 let h = 0;
 let ct = 8;
-let len = 0, scoreGame = 0;
+let len = 0, scoreGame = 0, countWord = 0;
 let currentWord = '';
 
 let indexWordList = 0;
@@ -113,7 +113,10 @@ function Balloon(x, y, r, color, dy, text, word) {
   }
   this.update = function () {
     this.type();
-    this.y += this.dy;
+    if (level > 5) {
+      this.y += this.dy / 3;
+    } else
+      this.y += this.dy;
   }
   this.type = function () {
     ctx.font = '40px Arial';
@@ -153,7 +156,12 @@ function start() {
   array = [];
   y = -10;
   level++;
-  scoreGame = 0;
+  countWord = 0;
+
+  if (level > 0) {
+    const data = getLocalData();
+    theme = data[indexWordList].words;
+  }
 
   shuffleArray(theme);
   theme = makeRepeated(theme, level);
@@ -169,9 +177,15 @@ function start() {
     array.push(new Balloon(x, y, RADIUS_BUBBLE, color, dy, text, ''));
   }
 
-
-  animate();
   panel.style.display = 'none';
+
+  if (level > 1) {
+    setTimeout(() => {
+      animate();
+    }, 2000);
+  } else {
+    animate();
+  }
 }
 
 drawStartScreen();
@@ -209,14 +223,11 @@ function loopBubble() {
     }
 
     // If the last bubble fall so we win
-    if (scoreGame === theme.length) {
+    if (countWord === theme.length) {
       ctx.fillStyle = 'black'
       ctx.fillText('Yeah! Win Level ' + level, c.width / 2 - 100, c.height / 2 - 100)
       cancelAnimationFrame(keyAnimation);
       return start();
-      // setTimeout(() => {
-      //   return start();
-      // }, 2000)
     }
 
   }
@@ -247,6 +258,7 @@ window.addEventListener('keyup', function (event) {
       ct += len;
       array[h].r = 0;
       array[h].y = 0;
+      countWord++;
       scoreGame++;
       array[h].word = '';
     }
